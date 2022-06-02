@@ -1,4 +1,4 @@
 # Optimistic Railway
-Mass transit, portal system, and associated registry for the metaverse.
+Mass transit, portal, and registry system for the metaverse.
 
 coming soon...
