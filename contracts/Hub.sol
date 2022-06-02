@@ -88,7 +88,7 @@ contract Hub is AccessControlEnumerable {
         }
     }
 
-    function removeZoneConnectionsTo(uint256[] memory connectedHubIDs)
+    function removeHubConnectionsTo(uint256[] memory connectedHubIDs)
         public
         onlyRole(DEFAULT_ADMIN_ROLE)
     {
