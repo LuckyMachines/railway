@@ -5,12 +5,14 @@ import "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
 import "./HubRegistry.sol";
 
 contract Hub is AccessControlEnumerable {
-    mapping(uint256 => uint256[]) internal _hubInputs;
-    mapping(uint256 => uint256[]) internal _hubOutputs;
     mapping(uint256 => bool) public inputsAllowed; // set other hubs to allow input
+
+    uint256[] internal _hubInputs;
+    uint256[] internal _hubOutputs;
+
     // or set it allow all inputs;
     bool public allowAllInputs;
-    HubRegistry internal REGISTRY;
+    HubRegistry public REGISTRY;
 
     constructor(address hubRegistryAddress, address hubAdmin) {
         REGISTRY = HubRegistry(hubRegistryAddress);
@@ -23,7 +25,7 @@ contract Hub is AccessControlEnumerable {
         view
         returns (uint256[] memory inputs)
     {
-        inputs = _hubInputs[hubID];
+        inputs = _hubInputs;
     }
 
     function hubOutputs(uint256 hubID)
@@ -31,7 +33,28 @@ contract Hub is AccessControlEnumerable {
         view
         returns (uint256[] memory outputs)
     {
-        outputs = _hubOutputs[hubID];
+        outputs = _hubOutputs;
+    }
+
+    // Hub to Hub communication
+    function addInput() external {
+        // get hub ID of sender
+        uint256 senderHubID = REGISTRY.idFromAddress(_msgSender());
+        require(
+            allowAllInputs || inputsAllowed[senderHubID],
+            "setting input not allowed from sender"
+        );
+        _hubInputs.push(senderHubID);
+    }
+
+    function removeInput() external {
+        // get hub ID of sender
+        uint256 senderHubID = REGISTRY.idFromAddress(_msgSender());
+        require(
+            allowAllInputs || inputsAllowed[senderHubID],
+            "removing input not allowed from sender"
+        );
+        //TODO: remove input
     }
 
     // Admin
@@ -50,16 +73,18 @@ contract Hub is AccessControlEnumerable {
         inputsAllowed[hubID] = allowed;
     }
 
-    function addHubConnections(uint256[2][] memory connections)
+    function addHubConnections(uint256[] memory outputs)
         public
         onlyRole(DEFAULT_ADMIN_ROLE)
     {
         // connections = [[from hub id, to hub id]]
-        require(_connectionHubsValid(connections), "not all hub indeces valid");
-        // TODO: require inputs are allowed from this hub
-        for (uint256 i = 0; i < connections.length; i++) {
-            _hubOutputs[connections[i][0]].push(connections[i][1]);
-            _hubInputs[connections[i][1]].push(connections[i][0]);
+        require(_connectionHubsValid(outputs), "not all hub indeces valid");
+        for (uint256 i = 0; i < outputs.length; i++) {
+            // Set self as input on other hub
+            Hub hub = Hub(REGISTRY.hubAddress(outputs[i]));
+            hub.addInput();
+            // Set outputs from this hub
+            _hubOutputs.push(outputs[i]);
         }
     }
 
@@ -73,9 +98,10 @@ contract Hub is AccessControlEnumerable {
         */
 
         for (uint256 i = 0; i < connectedHubIDs.length; i++) {
+            Hub hub = Hub(REGISTRY.hubAddress(connectedHubIDs[i]));
+            hub.removeInput();
             //TODO:
-            // remove input from output hub - connections[i][0]
-            // remove output from input hub - connections[i][1]
+            // remove output from self - connectedHubIDs[i]
         }
     }
 
@@ -85,18 +111,15 @@ contract Hub is AccessControlEnumerable {
         REGISTRY.register();
     }
 
-    function _connectionHubsValid(uint256[2][] memory connections)
+    function _connectionHubsValid(uint256[] memory outputs)
         internal
         view
         returns (bool isValid)
     {
         // checks that all IDs passed exist
-        for (uint256 i = 0; i < connections.length; i++) {
-            isValid = true;
-            if (
-                REGISTRY.hubAddress(connections[i][0]) == address(0) ||
-                REGISTRY.hubAddress(connections[i][1]) == address(0)
-            ) {
+        isValid = true;
+        for (uint256 i = 0; i < outputs.length; i++) {
+            if (REGISTRY.hubAddress(outputs[i]) == address(0)) {
                 isValid = false;
                 break;
             }
