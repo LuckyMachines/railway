@@ -13,11 +13,10 @@ contract HubRegistry is AccessControlEnumerable {
     // Mappings from hub id
     mapping(uint256 => string) public hubName;
     mapping(uint256 => address) public hubAddress;
-    mapping(uint256 => uint256[]) internal _hubInputs;
-    mapping(uint256 => uint256[]) internal _hubOutputs;
 
     // Mapping from hub address
     mapping(address => bool) public isRegistered;
+    mapping(address => uint256) public idFromAddress;
 
     uint256 public totalRegistrations;
     uint256 public registrationFee;
@@ -25,22 +24,6 @@ contract HubRegistry is AccessControlEnumerable {
 
     constructor(address adminAddress) {
         _setupRole(DEFAULT_ADMIN_ROLE, adminAddress);
-    }
-
-    function hubInputs(uint256 hubID)
-        public
-        view
-        returns (uint256[] memory inputs)
-    {
-        inputs = _hubInputs[hubID];
-    }
-
-    function hubOutputs(uint256 hubID)
-        public
-        view
-        returns (uint256[] memory outputs)
-    {
-        outputs = _hubOutputs[hubID];
     }
 
     function hubCanRegister(address _hubAddress)
@@ -116,6 +99,7 @@ contract HubRegistry is AccessControlEnumerable {
             uint256 newID = totalRegistrations + 1; // IDs start @ 1
             totalRegistrations = newID;
             hubAddress[newID] = _hubAddress;
+            idFromAddress[_hubAddress] = newID;
         }
     }
 
