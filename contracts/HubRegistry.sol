@@ -54,6 +54,7 @@ contract HubRegistry is AccessControlEnumerable {
         payable
         onlyRole(HUB_ROLE)
     {
+        // TODO: require name contains valid characters
         require(msg.value >= namingFee, "naming fee required");
         require(_msgSender() == hubAddress[hubID], "hubID for sender is wrong");
         require(nameIsAvailable(_hubName), "name unavailable");
