@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.4.26;
 
-library ValidChars {
+library ValidCharacters {
     struct State {
         bool accepts;
         function(bytes1) internal pure returns (State memory) func;
