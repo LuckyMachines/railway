@@ -1,6 +1,6 @@
 {
   "name": "@luckymachines/optimistic-railway",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "An on chain registry and mass connection / transit system for dapps and their users.",
   "main": "index.js",
   "scripts": {
