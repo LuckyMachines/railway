@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.4.26;
+pragma solidity >=0.7.0 <0.9.0;
 
 library ValidCharacters {
     struct State {
@@ -7,7 +7,7 @@ library ValidCharacters {
         function(bytes1) internal pure returns (State memory) func;
     }
 
-    string public constant regex = "[a-z0-9._-]";
+    string public constant regex = "[a-z0-9._-]+";
 
     function s0(bytes1 c) internal pure returns (State memory) {
         c = c;
@@ -15,12 +15,13 @@ library ValidCharacters {
     }
 
     function s1(bytes1 c) internal pure returns (State memory) {
+        uint8 uc = uint8(c);
         if (
-            c == 45 ||
-            c == 46 ||
-            (c >= 48 && c <= 57) ||
-            c == 95 ||
-            (c >= 97 && c <= 122)
+            uc == 45 ||
+            uc == 46 ||
+            (uc >= 48 && uc <= 57) ||
+            uc == 95 ||
+            (uc >= 97 && uc <= 122)
         ) {
             return State(true, s2);
         }
@@ -29,13 +30,36 @@ library ValidCharacters {
     }
 
     function s2(bytes1 c) internal pure returns (State memory) {
-        // silence unused var warning
-        c = c;
+        uint8 uc = uint8(c);
+        if (
+            uc == 45 ||
+            uc == 46 ||
+            (uc >= 48 && uc <= 57) ||
+            uc == 95 ||
+            (uc >= 97 && uc <= 122)
+        ) {
+            return State(true, s3);
+        }
 
         return State(false, s0);
     }
 
-    function matches(string input) public pure returns (bool) {
+    function s3(bytes1 c) internal pure returns (State memory) {
+        uint8 uc = uint8(c);
+        if (
+            uc == 45 ||
+            uc == 46 ||
+            (uc >= 48 && uc <= 57) ||
+            uc == 95 ||
+            (uc >= 97 && uc <= 122)
+        ) {
+            return State(true, s3);
+        }
+
+        return State(false, s0);
+    }
+
+    function matches(string memory input) public pure returns (bool) {
         State memory cur = State(false, s1);
 
         for (uint256 i = 0; i < bytes(input).length; i++) {
