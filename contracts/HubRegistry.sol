@@ -2,6 +2,7 @@
 pragma solidity >=0.7.0 <0.9.0;
 
 import "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
+import "./ValidCharacters.sol";
 
 contract HubRegistry is AccessControlEnumerable {
     bytes32 public constant HUB_ROLE = keccak256("HUB_ROLE");
@@ -54,7 +55,7 @@ contract HubRegistry is AccessControlEnumerable {
         payable
         onlyRole(HUB_ROLE)
     {
-        // TODO: require name contains valid characters
+        require(ValidCharacters.matches(_hubName));
         require(msg.value >= namingFee, "naming fee required");
         require(_msgSender() == hubAddress[hubID], "hubID for sender is wrong");
         require(nameIsAvailable(_hubName), "name unavailable");
