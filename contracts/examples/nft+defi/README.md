@@ -33,4 +33,4 @@ The four processes we are demonstrating here are:
 1. Call getTokenSummary() on MainHub. Notice we only have our native token balance.
 2. Make sure you have enough native tokens and call claimNFT()
 3. You should now have executed a trade, staked some tokens, and minted your NFT! Call getTokenSummary() again to see.
-4. As a bonus, call getPartyGuests(), to see all users who have completed this same railway sequence
+4. As a bonus, call getPartyGuests() to see how many users have completed this same railway sequence
