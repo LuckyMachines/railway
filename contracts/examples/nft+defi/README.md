@@ -3,7 +3,6 @@
 **Each contract is a simplified version of a realistic contract on Optimism, connected to a railway hub:**
 
 - **DEX.sol:** A sample exchange that swaps native tokens for a sample custom ERC20 token
-- **StakingToken.sol:** A sample ERC20 token we will use in our staking contract
 - **Stake.sol:** A sample staking contract that locks up some amount of the sample ERC20 token
 - **ExclusiveNFT.sol:** An ERC721 token that is mintable only to addresses with some amount of StakingToken staked
 - **MainHub.sol:** An example of a central hub, from which users could choose a variety of destinations. In this example we only have one route we can take.
@@ -20,9 +19,9 @@ This example has only one output per hub, though hubs can have many inputs and o
 
 ## Transaction Flow
 
-From MainHub, the user calls one function, performs one transaction, but executes all of the various operations required across many different contracts to finally purchase this exclusive NFT, and returning to the main hub, and automatically entering the showcase room, where ExclusiveNFT holders can congregate and party with their new NFTs.
+From MainHub, the user calls one function & performs one transaction, but executes all of the various operations required across many different contracts to finally purchase this exclusive NFT and return back to the main hub where the NFT party can begin!
 
-The three processes we are demonstrating here are:
+The four processes we are demonstrating here are:
 
 1. Trade some native tokens for a custom token on a sample dex
 2. Stake these newly obtained custom tokens on a second contract & receive a staking token
