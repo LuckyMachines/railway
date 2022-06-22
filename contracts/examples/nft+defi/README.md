@@ -34,3 +34,5 @@ The four processes we are demonstrating here are:
 2. Make sure you have enough native tokens and call claimNFT()
 3. You should now have executed a trade, staked some tokens, and minted your NFT! Call getTokenSummary() again to see.
 4. As a bonus, call getPartyGuests() to see how many users have completed this same railway sequence
+
+[![Watch the video](https://img.youtube.com/vi/DUUnCTDvmmM/hqdefault.jpg)](https://youtu.be/DUUnCTDvmmM)
