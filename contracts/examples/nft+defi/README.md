@@ -24,8 +24,8 @@ From MainHub, the user calls one function & performs one transaction, but execut
 The four processes we are demonstrating here are:
 
 1. Trade some native tokens for a custom token on a sample dex
-2. Stake these newly obtained custom tokens on a second contract & receive a staking token
-3. Purchase NFT that requires tokens to be staked
+2. Stake these newly obtained custom tokens on a second contract
+3. Purchase NFT on another contract that requires tokens to be staked
 4. Head over to the NFT party
 
 ## Run the example:
