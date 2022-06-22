@@ -3,17 +3,20 @@ pragma solidity >=0.7.0 <0.9.0;
 
 import "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
 
+// Members can join a group railcar
+// or Hub can create one with specific addresses
+
 contract Railcar is AccessControlEnumerable {
     bytes32 public constant HUB_ROLE = keccak256("HUB_ROLE");
 
     // Mappings from railcar id
     mapping(uint256 => address[]) public members;
     mapping(uint256 => uint256) public memberLimit;
-    mapping(uint256 => address) public creator;
+    mapping(uint256 => address) public owner;
 
     // Mapping from member address
     mapping(address => uint256[]) public railcars;
-    mapping(address => uint256[]) public createdRailcars;
+    mapping(address => uint256[]) public ownedRailcars;
 
     // Mapping from railcar id -> member address
     mapping(uint256 => mapping(address => bool)) public isMember;
@@ -40,7 +43,7 @@ contract Railcar is AccessControlEnumerable {
     }
 
     function getCreatedRailcars() public view returns (uint256[] memory) {
-        return createdRailcars[_msgSender()];
+        return ownedRailcars[_msgSender()];
     }
 
     function getRailcars() public view returns (uint256[] memory) {
@@ -61,10 +64,7 @@ contract Railcar is AccessControlEnumerable {
     }
 
     // Admin
-    function setRegistrationFee(uint256 fee)
-        public
-        onlyRole(DEFAULT_ADMIN_ROLE)
-    {
+    function setCreationFee(uint256 fee) public onlyRole(DEFAULT_ADMIN_ROLE) {
         creationFee = fee;
     }
 
@@ -72,8 +72,8 @@ contract Railcar is AccessControlEnumerable {
     function _createRailcar(address _creatorAddress, uint256 limit) internal {
         totalRailcars++;
         memberLimit[totalRailcars] = limit;
-        creator[totalRailcars] = _creatorAddress;
-        createdRailcars[_creatorAddress].push(totalRailcars);
+        owner[totalRailcars] = _creatorAddress;
+        ownedRailcars[_creatorAddress].push(totalRailcars);
     }
 
     function _createRailcar(

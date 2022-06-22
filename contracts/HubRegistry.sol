@@ -102,6 +102,7 @@ contract HubRegistry is AccessControlEnumerable {
             totalRegistrations = newID;
             hubAddress[newID] = _hubAddress;
             idFromAddress[_hubAddress] = newID;
+            _setupRole(HUB_ROLE, _hubAddress);
         }
     }
 

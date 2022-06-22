@@ -5,8 +5,8 @@ import "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
 import "./HubRegistry.sol";
 
 contract Hub is AccessControlEnumerable {
-    mapping(uint256 => bool) public inputsAllowed; // set other hubs to allow input
-
+    mapping(uint256 => bool) public inputAllowed; // set other hubs to allow input
+    mapping(uint256 => bool) public inputActive;
     uint256[] internal _hubInputs;
     uint256[] internal _hubOutputs;
 
@@ -14,47 +14,51 @@ contract Hub is AccessControlEnumerable {
     bool public allowAllInputs;
     HubRegistry public REGISTRY;
 
+    modifier onlyAuthorizedHub() {
+        require(
+            allowAllInputs ||
+                inputAllowed[REGISTRY.idFromAddress(_msgSender())],
+            "hub not authorized"
+        );
+        _;
+    }
+
     constructor(address hubRegistryAddress, address hubAdmin) {
         REGISTRY = HubRegistry(hubRegistryAddress);
         _register();
         _setupRole(DEFAULT_ADMIN_ROLE, hubAdmin);
     }
 
-    function hubInputs(uint256 hubID)
-        public
-        view
-        returns (uint256[] memory inputs)
-    {
+    function hubInputs() public view returns (uint256[] memory inputs) {
         inputs = _hubInputs;
     }
 
-    function hubOutputs(uint256 hubID)
-        public
-        view
-        returns (uint256[] memory outputs)
-    {
+    function hubOutputs() public view returns (uint256[] memory outputs) {
         outputs = _hubOutputs;
     }
 
     // Hub to Hub communication
-    function addInput() external {
+    function addInput() external onlyAuthorizedHub {
         // get hub ID of sender
-        uint256 senderHubID = REGISTRY.idFromAddress(_msgSender());
-        require(
-            allowAllInputs || inputsAllowed[senderHubID],
-            "setting input not allowed from sender"
-        );
-        _hubInputs.push(senderHubID);
+        uint256 hubID = REGISTRY.idFromAddress(_msgSender());
+        _hubInputs.push(hubID);
+        inputActive[hubID] = true;
     }
 
-    function removeInput() external {
-        // get hub ID of sender
-        uint256 senderHubID = REGISTRY.idFromAddress(_msgSender());
+    function enterUser(address userAddress) external virtual onlyAuthorizedHub {
         require(
-            allowAllInputs || inputsAllowed[senderHubID],
-            "removing input not allowed from sender"
+            inputActive[REGISTRY.idFromAddress(_msgSender())],
+            "origin hub not set as input"
         );
+        _userWillEnter(userAddress);
+        _userDidEnter(userAddress);
+    }
+
+    function removeInput() external onlyAuthorizedHub {
+        uint256 hubID = REGISTRY.idFromAddress(_msgSender());
+        _hubInputs.push(hubID);
         //TODO: remove input
+        inputActive[hubID] = false;
     }
 
     // Admin
@@ -70,14 +74,13 @@ contract Hub is AccessControlEnumerable {
         public
         onlyRole(DEFAULT_ADMIN_ROLE)
     {
-        inputsAllowed[hubID] = allowed;
+        inputAllowed[hubID] = allowed;
     }
 
     function addHubConnections(uint256[] memory outputs)
         public
         onlyRole(DEFAULT_ADMIN_ROLE)
     {
-        // connections = [[from hub id, to hub id]]
         require(_connectionHubsValid(outputs), "not all hub indeces valid");
         for (uint256 i = 0; i < outputs.length; i++) {
             // Set self as input on other hub
@@ -105,7 +108,39 @@ contract Hub is AccessControlEnumerable {
         }
     }
 
+    // Custom Behaviors
+    function _userWillEnter(address userAddress) internal virtual {}
+
+    function _userDidEnter(address userAddress) internal virtual {}
+
+    function _userWillExit(address userAddress) internal virtual {}
+
+    function _userDidExit(address userAddress) internal virtual {}
+
+    function _railcarWillEnter(uint256 railcarID) internal virtual {}
+
+    function _railcarDidEnter(uint256 railcarID) internal virtual {}
+
+    function _railcarWillExit(uint256 railcarID) internal virtual {}
+
+    function _railcarDidExit(uint256 railcarID) internal virtual {}
+
     // Internal
+
+    function _sendUserToHub(address userAddress, uint256 hubID) internal {
+        _userWillExit(userAddress);
+        Hub(REGISTRY.hubAddress(hubID)).enterUser(userAddress);
+        _userDidExit(userAddress);
+    }
+
+    function _sendUserToHub(address userAddress, string memory hubName)
+        internal
+    {
+        _userWillExit(userAddress);
+        Hub(REGISTRY.addressFromName(hubName)).enterUser(userAddress);
+        _userDidExit(userAddress);
+    }
+
     function _register() internal {
         require(REGISTRY.hubCanRegister(address(this)), "can't register");
         REGISTRY.register();
@@ -126,16 +161,13 @@ contract Hub is AccessControlEnumerable {
         }
     }
 
-    function _isAllowedInput(uint256 hubID)
-        internal
-        view
-        returns (bool inputAllowed)
-    {
+    function _isAllowedInput(uint256 hubID) internal view returns (bool) {
         Hub hubToCheck = Hub(REGISTRY.hubAddress(hubID));
-        inputAllowed = (hubToCheck.allowAllInputs() ||
-            hubToCheck.inputsAllowed(_hubID()))
+        bool allowed = (hubToCheck.allowAllInputs() ||
+            hubToCheck.inputAllowed(_hubID()))
             ? true
             : false;
+        return allowed;
     }
 
     function _hubID() internal view returns (uint256) {
