@@ -17,6 +17,9 @@
   },
   "homepage": "https://github.com/LuckyMachines/railway#readme",
   "dependencies": {
+    "@opengsn/contracts": "^2.2.6",
+    "@opengsn/dev": "^2.2.6",
+    "@opengsn/paymasters": "^2.2.6",
     "@openzeppelin/contracts": "^4.7.2"
   }
 }
