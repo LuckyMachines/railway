@@ -1,6 +1,6 @@
 {
   "name": "@luckymachines/railway",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "An on chain registry and mass connection / transit system for dapps and their users.",
   "main": "index.js",
   "scripts": {
