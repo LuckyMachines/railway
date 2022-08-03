@@ -1,6 +1,6 @@
 {
-  "name": "@luckymachines/optimistic-railway",
-  "version": "0.0.4",
+  "name": "@luckymachines/railway",
+  "version": "0.0.5",
   "description": "An on chain registry and mass connection / transit system for dapps and their users.",
   "main": "index.js",
   "scripts": {
@@ -8,12 +8,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/LuckyMachines/optimistic-railway.git"
+    "url": "git+https://github.com/LuckyMachines/railway.git"
   },
   "author": "Max Meier",
   "license": "GPL-3.0",
   "bugs": {
-    "url": "https://github.com/LuckyMachines/optimistic-railway/issues"
+    "url": "https://github.com/LuckyMachines/railway/issues"
   },
-  "homepage": "https://github.com/LuckyMachines/optimistic-railway#readme"
+  "homepage": "https://github.com/LuckyMachines/railway#readme"
 }
