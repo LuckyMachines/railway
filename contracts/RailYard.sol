@@ -11,6 +11,7 @@ contract RailYard is AccessControlEnumerable {
         address[] members;
         uint256 memberLimit;
         address owner;
+        address operator;
         mapping(address => bool) isMember;
         mapping(address => uint256) memberIndex; // for removing members without looping
     }
@@ -68,18 +69,27 @@ contract RailYard is AccessControlEnumerable {
     }
 
     // Railcar Owner functions
+    function setOperator(address operator, uint256 railcarID) public {
+        Railcar storage r = railcar[railcarID];
+        require(r.owner == _msgSender(), "only owner can assign operator");
+        r.operator = operator;
+    }
+
+    // Railcar Owner / Operator functions
     function joinRailcar(uint256 railcarID, address userAddress) public {
         require(
-            railcar[railcarID].owner == _msgSender(),
-            "only owner can call joinRailcar directly"
+            railcar[railcarID].owner == _msgSender() ||
+                railcar[railcarID].operator == _msgSender(),
+            "only owner or operator can call joinRailcar directly"
         );
         _joinRailcar(railcarID, userAddress);
     }
 
     function leaveRailcar(uint256 railcarID, address userAddress) public {
         require(
-            railcar[railcarID].owner == _msgSender(),
-            "only owner can call leaveRailcar directly"
+            railcar[railcarID].owner == _msgSender() ||
+                railcar[railcarID].operator == _msgSender(),
+            "only owner or operator can call leaveRailcar directly"
         );
         _leaveRailcar(railcarID, userAddress);
     }
@@ -95,6 +105,7 @@ contract RailYard is AccessControlEnumerable {
         Railcar storage r = railcar[totalRailcars];
         r.memberLimit = limit;
         r.owner = _creatorAddress;
+        r.operator = _creatorAddress;
         ownedRailcars[_creatorAddress].push(totalRailcars);
     }
 
