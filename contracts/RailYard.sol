@@ -7,10 +7,6 @@ import "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
 // or Hub can create one with specific addresses
 
 contract RailYard is AccessControlEnumerable {
-    bytes32 public constant HUB_ROLE = keccak256("HUB_ROLE");
-    bytes32 public constant RAILCAR_CONTROLLER =
-        keccak256("RAILCAR_CONTROLLER");
-
     struct Railcar {
         address[] members;
         uint256 memberLimit;
@@ -71,31 +67,20 @@ contract RailYard is AccessControlEnumerable {
         return railcars[_msgSender()];
     }
 
-    // Called directly from hub
-    function createRailcarFromHub(address[] memory _members)
-        external
-        payable
-        onlyRole(HUB_ROLE)
-        returns (uint256 railcarID)
-    {
-        require(_canCreate(_msgSender()), "Hub not qualified to create");
-        require(msg.value >= creationFee, "Creation fee required");
-        _createRailcar(_msgSender(), _members.length, _members);
-        railcarID = totalRailcars;
-    }
-
-    // Railcar Controller (controller called by hub or railcar railcar member)
-    function joinRailcar(uint256 railcarID, address userAddress)
-        public
-        onlyRole(RAILCAR_CONTROLLER)
-    {
+    // Railcar Owner functions
+    function joinRailcar(uint256 railcarID, address userAddress) public {
+        require(
+            railcar[railcarID].owner == _msgSender(),
+            "only owner can call joinRailcar directly"
+        );
         _joinRailcar(railcarID, userAddress);
     }
 
-    function leaveRailcar(uint256 railcarID, address userAddress)
-        public
-        onlyRole(RAILCAR_CONTROLLER)
-    {
+    function leaveRailcar(uint256 railcarID, address userAddress) public {
+        require(
+            railcar[railcarID].owner == _msgSender(),
+            "only owner can call leaveRailcar directly"
+        );
         _leaveRailcar(railcarID, userAddress);
     }
 
@@ -128,13 +113,13 @@ contract RailYard is AccessControlEnumerable {
         }
     }
 
-    function _canCreate(address _hubAddress)
+    function _canCreate(address creatorAddress)
         internal
         view
         virtual
         returns (bool canCreate)
     {
-        canCreate = (_hubAddress == address(0)) ? false : true;
+        canCreate = (creatorAddress == address(0)) ? false : true;
     }
 
     function _joinRailcar(uint256 railcarID, address userAddress) internal {
