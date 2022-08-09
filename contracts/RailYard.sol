@@ -52,6 +52,17 @@ contract RailYard is AccessControlEnumerable {
         railcarID = totalRailcars;
     }
 
+    function createRailcar(uint256 limit, uint256[] memory storageValues)
+        public
+        payable
+        returns (uint256 railcarID)
+    {
+        require(_canCreate(_msgSender()), "Sender not qualified to create");
+        require(msg.value >= creationFee, "Creation fee required");
+        _createRailcar(_msgSender(), _msgSender(), limit, storageValues);
+        railcarID = totalRailcars;
+    }
+
     function createRailcar(address[] memory _members)
         external
         payable
@@ -172,6 +183,36 @@ contract RailYard is AccessControlEnumerable {
         r.memberLimit = limit;
         r.owner = _ownerAddress;
         r.operator = _operatorAddress;
+        ownedRailcars[_ownerAddress].push(totalRailcars);
+    }
+
+    function _createRailcar(
+        address _ownerAddress,
+        address _operatorAddress,
+        uint256 limit,
+        uint256[] memory storageValues
+    ) internal {
+        totalRailcars++;
+        Railcar storage r = railcar[totalRailcars];
+        r.memberLimit = limit;
+        r.owner = _ownerAddress;
+        r.operator = _operatorAddress;
+        r.intStorage = storageValues;
+        ownedRailcars[_ownerAddress].push(totalRailcars);
+    }
+
+    function _createRailcar(
+        address _ownerAddress,
+        address _operatorAddress,
+        uint256 limit,
+        string[] memory storageValues
+    ) internal {
+        totalRailcars++;
+        Railcar storage r = railcar[totalRailcars];
+        r.memberLimit = limit;
+        r.owner = _ownerAddress;
+        r.operator = _operatorAddress;
+        r.stringStorage = storageValues;
         ownedRailcars[_ownerAddress].push(totalRailcars);
     }
 
