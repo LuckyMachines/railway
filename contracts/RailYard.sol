@@ -14,6 +14,8 @@ contract RailYard is AccessControlEnumerable {
         address operator;
         mapping(address => bool) isMember;
         mapping(address => uint256) memberIndex; // for removing members without looping
+        uint256[] intStorage;
+        string[] stringStorage;
     }
 
     // Mappings from railcar id
@@ -119,6 +121,26 @@ contract RailYard is AccessControlEnumerable {
             "only owner or operator can call leaveRailcar directly"
         );
         _leaveRailcar(railcarID, userAddress);
+    }
+
+    function addStorage(uint256 railcarID, string[] memory strings) public {
+        require(
+            railcar[railcarID].owner == _msgSender() ||
+                railcar[railcarID].operator == _msgSender(),
+            "only owner or operator can add storage"
+        );
+        Railcar storage r = railcar[railcarID];
+        r.stringStorage = strings;
+    }
+
+    function addStorage(uint256 railcarID, uint256[] memory ints) public {
+        require(
+            railcar[railcarID].owner == _msgSender() ||
+                railcar[railcarID].operator == _msgSender(),
+            "only owner or operator can add storage"
+        );
+        Railcar storage r = railcar[railcarID];
+        r.intStorage = ints;
     }
 
     // Admin
