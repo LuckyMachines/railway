@@ -27,6 +27,7 @@ contract RailYard is AccessControlEnumerable {
 
     uint256 public totalRailcars;
     uint256 public creationFee;
+    uint256 public storageFee;
 
     constructor(address adminAddress) {
         _setupRole(DEFAULT_ADMIN_ROLE, adminAddress);
@@ -123,17 +124,25 @@ contract RailYard is AccessControlEnumerable {
         _leaveRailcar(railcarID, userAddress);
     }
 
-    function addStorage(uint256 railcarID, string[] memory strings) public {
+    function addStorage(uint256 railcarID, string[] memory strings)
+        public
+        payable
+    {
         require(
             railcar[railcarID].owner == _msgSender() ||
                 railcar[railcarID].operator == _msgSender(),
             "only owner or operator can add storage"
         );
+        require(msg.value >= storageFee, "Storage fee required");
         Railcar storage r = railcar[railcarID];
         r.stringStorage = strings;
     }
 
-    function addStorage(uint256 railcarID, uint256[] memory ints) public {
+    function addStorage(uint256 railcarID, uint256[] memory ints)
+        public
+        payable
+    {
+        require(msg.value >= storageFee, "Storage fee required");
         require(
             railcar[railcarID].owner == _msgSender() ||
                 railcar[railcarID].operator == _msgSender(),
@@ -146,6 +155,10 @@ contract RailYard is AccessControlEnumerable {
     // Admin
     function setCreationFee(uint256 fee) public onlyRole(DEFAULT_ADMIN_ROLE) {
         creationFee = fee;
+    }
+
+    function setStorageFee(uint256 fee) public onlyRole(DEFAULT_ADMIN_ROLE) {
+        storageFee = fee;
     }
 
     // Internal
