@@ -45,7 +45,7 @@ contract RailYard is AccessControlEnumerable {
     {
         require(_canCreate(_msgSender()), "Sender not qualified to create");
         require(msg.value >= creationFee, "Creation fee required");
-        _createRailcar(_msgSender(), limit);
+        _createRailcar(_msgSender(), _msgSender(), limit);
         railcarID = totalRailcars;
     }
 
@@ -56,7 +56,34 @@ contract RailYard is AccessControlEnumerable {
     {
         require(_canCreate(_msgSender()), "Sender not qualified to create");
         require(msg.value >= creationFee, "Creation fee required");
-        _createRailcar(_msgSender(), _members.length, _members);
+        _createRailcar(_msgSender(), _msgSender(), _members.length, _members);
+        railcarID = totalRailcars;
+    }
+
+    function createRailcar(
+        address ownerAddress,
+        address operatorAddress,
+        uint256 limit
+    ) public payable returns (uint256 railcarID) {
+        require(_canCreate(_msgSender()), "Sender not qualified to create");
+        require(msg.value >= creationFee, "Creation fee required");
+        _createRailcar(ownerAddress, operatorAddress, limit);
+        railcarID = totalRailcars;
+    }
+
+    function createRailcar(
+        address ownerAddress,
+        address operatorAddress,
+        address[] memory _members
+    ) external payable returns (uint256 railcarID) {
+        require(_canCreate(_msgSender()), "Sender not qualified to create");
+        require(msg.value >= creationFee, "Creation fee required");
+        _createRailcar(
+            ownerAddress,
+            operatorAddress,
+            _members.length,
+            _members
+        );
         railcarID = totalRailcars;
     }
 
@@ -100,22 +127,27 @@ contract RailYard is AccessControlEnumerable {
     }
 
     // Internal
-    function _createRailcar(address _creatorAddress, uint256 limit) internal {
+    function _createRailcar(
+        address _ownerAddress,
+        address _operatorAddress,
+        uint256 limit
+    ) internal {
         totalRailcars++;
         Railcar storage r = railcar[totalRailcars];
         r.memberLimit = limit;
-        r.owner = _creatorAddress;
-        r.operator = _creatorAddress;
-        ownedRailcars[_creatorAddress].push(totalRailcars);
+        r.owner = _ownerAddress;
+        r.operator = _operatorAddress;
+        ownedRailcars[_ownerAddress].push(totalRailcars);
     }
 
     function _createRailcar(
-        address _creatorAddress,
+        address _ownerAddress,
+        address _operatorAddress,
         uint256 limit,
         address[] memory _members
     ) internal {
         // Create a railcar with members
-        _createRailcar(_creatorAddress, limit);
+        _createRailcar(_ownerAddress, _operatorAddress, limit);
         uint256 validMembers = limit < _members.length
             ? limit
             : _members.length;
