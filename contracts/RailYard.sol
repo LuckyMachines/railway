@@ -150,22 +150,6 @@ contract RailYard is AccessControlEnumerable {
         return railcar[railcarID].operator;
     }
 
-    function getRailcarIsMemeber(uint256 railcarID, address userAddress)
-        public
-        view
-        returns (bool)
-    {
-        return isMember[railcarID][userAddress];
-    }
-
-    function getRailcarMemberIndex(uint256 railcarID, address userAddress)
-        public
-        view
-        returns (uint256)
-    {
-        return memberIndex[railcarID][userAddress];
-    }
-
     function getRailcarIntStorage(uint256 railcarID)
         public
         view
