@@ -12,8 +12,6 @@ contract RailYard is AccessControlEnumerable {
         uint256 memberLimit;
         address owner;
         address operator;
-        mapping(address => bool) isMember;
-        mapping(address => uint256) memberIndex; // for removing members without looping
         uint256[] intStorage;
         string[] stringStorage;
     }
@@ -24,6 +22,10 @@ contract RailYard is AccessControlEnumerable {
     // Mapping from member address
     mapping(address => uint256[]) public railcars;
     mapping(address => uint256[]) public ownedRailcars;
+
+    // Mapping from railcar id => member address
+    mapping(uint256 => mapping(address => bool)) public isMember;
+    mapping(uint256 => mapping(address => uint256)) public memberIndex;
 
     uint256 public totalRailcars;
     uint256 public creationFee;
@@ -107,6 +109,77 @@ contract RailYard is AccessControlEnumerable {
 
     function getRailcars() public view returns (uint256[] memory) {
         return railcars[_msgSender()];
+    }
+
+    // Railcar summary functions
+    // struct Railcar {
+    //     address[] members;
+    //     uint256 memberLimit;
+    //     address owner;
+    //     address operator;
+    //     mapping(address => bool) isMember;
+    //     mapping(address => uint256) memberIndex; // for removing members without looping
+    //     uint256[] intStorage;
+    //     string[] stringStorage;
+    // }
+    function getRailcarMembers(uint256 railcarID)
+        public
+        view
+        returns (address[] memory)
+    {
+        return railcar[railcarID].members;
+    }
+
+    function getRailcarMemberLimit(uint256 railcarID)
+        public
+        view
+        returns (uint256)
+    {
+        return railcar[railcarID].memberLimit;
+    }
+
+    function getRailcarOwner(uint256 railcarID) public view returns (address) {
+        return railcar[railcarID].owner;
+    }
+
+    function getRailcarOperator(uint256 railcarID)
+        public
+        view
+        returns (address)
+    {
+        return railcar[railcarID].operator;
+    }
+
+    function getRailcarIsMemeber(uint256 railcarID, address userAddress)
+        public
+        view
+        returns (bool)
+    {
+        return isMember[railcarID][userAddress];
+    }
+
+    function getRailcarMemberIndex(uint256 railcarID, address userAddress)
+        public
+        view
+        returns (uint256)
+    {
+        return memberIndex[railcarID][userAddress];
+    }
+
+    function getRailcarIntStorage(uint256 railcarID)
+        public
+        view
+        returns (uint256[] memory)
+    {
+        return railcar[railcarID].intStorage;
+    }
+
+    function getRailcarStringStorage(uint256 railcarID)
+        public
+        view
+        returns (string[] memory)
+    {
+        return railcar[railcarID].stringStorage;
     }
 
     // Railcar Owner functions
@@ -242,21 +315,21 @@ contract RailYard is AccessControlEnumerable {
     }
 
     function _joinRailcar(uint256 railcarID, address userAddress) internal {
-        Railcar storage r = railcar[railcarID];
-        if (!r.isMember[userAddress]) {
+        if (!isMember[railcarID][userAddress]) {
+            Railcar storage r = railcar[railcarID];
             r.members.push(userAddress);
-            r.memberIndex[userAddress] = r.members.length - 1;
-            r.isMember[userAddress] = true;
+            memberIndex[railcarID][userAddress] = r.members.length - 1;
+            isMember[railcarID][userAddress] = true;
             railcars[userAddress].push(railcarID);
         }
     }
 
     function _leaveRailcar(uint256 railcarID, address userAddress) internal {
-        Railcar storage r = railcar[railcarID];
-        if (!r.isMember[userAddress]) {
-            delete r.members[r.memberIndex[userAddress]];
-            r.isMember[userAddress] = false;
-            r.memberIndex[userAddress] = 0;
+        if (!isMember[railcarID][userAddress]) {
+            Railcar storage r = railcar[railcarID];
+            delete r.members[memberIndex[railcarID][userAddress]];
+            isMember[railcarID][userAddress] = false;
+            memberIndex[railcarID][userAddress] = 0;
             // TODO:
             // delete from array of railcars - railcars[userAddress] will still have railcar ID
         }
